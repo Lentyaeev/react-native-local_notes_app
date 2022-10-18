@@ -1,14 +1,31 @@
-import { useEffect, useState } from 'react';
-import { Button, FlatList, Text, StyleSheet, ScrollView, View, Modal, TextInput, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
+import { 
+  Text,
+  StyleSheet,
+  ScrollView,
+  View,
+  TouchableOpacity,
+  Animated,
+  PanResponder
+} from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import NotePreview from './NotePreview';
 import NoteView from './NoteView';
-import { addNote } from '../features/notes';
 import { setSelectedNote } from '../features/selectedNote';
 
 export const List = () => {
   const notes = useSelector((state) => state.notes.value);
   const dispatch = useDispatch();
+  
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeIn = () => {
+    fadeAnim.setValue(0);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  };
 
   const createNewNote = () => {
     const id = Date.now();
@@ -24,9 +41,12 @@ export const List = () => {
     console.log(notes);
   }, [notes]);
 
+  useEffect(() => {
+    fadeIn();
+  }, []);
 
   return (
-    <View style={styles.main}>
+    <Animated.View style={{...styles.main, opacity: fadeAnim}}>
       <TouchableOpacity 
         style={styles.addNoteButton}
         onPress={createNewNote}
@@ -51,7 +71,7 @@ export const List = () => {
         </View>
         <NoteView />
       </ScrollView>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -86,5 +106,11 @@ export const styles = StyleSheet.create({
     height: 50,
     borderRadius: 100,
     backgroundColor: '#fcb603',
-  }
+  },
+  box: {
+    height: 150,
+    width: 150,
+    backgroundColor: "blue",
+    borderRadius: 5
+  },
 });

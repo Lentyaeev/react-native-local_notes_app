@@ -1,20 +1,31 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { 
   Text,
   StyleSheet,
   ScrollView, 
   View, 
   TouchableOpacity,
+  Animated
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import NoteView from './components/NoteView';
 import { deleteNotes } from './features/notes';
-import { setSelectedId, setSelectView } from './features/selectView';
+import { setSelectedId } from './features/selectView';
 
 export const SelectViewComponent = () => {
   const notes = useSelector((state) => state.notes.value);
   const selectedInitial = useSelector((state) => state.selectView.id);
   const [selectedNotes, setSelectedNotes] = useState([]);
+  const [isFirstRender, setIsFirstRender] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeIn = () => {
+    fadeAnim.setValue(0);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  };
   const dispatch = useDispatch();
 
   const checkHighlight = (noteId) => {
@@ -24,11 +35,27 @@ export const SelectViewComponent = () => {
   useEffect(() => {
     setSelectedNotes([selectedInitial]);
     console.log(selectedNotes);
+    fadeIn();
+    setIsFirstRender(true);
   }, []);
 
+  useEffect(() => {
+    if (selectedNotes.length === 0 && isFirstRender) {
+      dispatch(setSelectedId(null));
+    }
+  }, [selectedNotes]);
+
+  const hahdleSelect = (noteId) => {
+    setSelectedNotes(prev => {
+      if (prev && prev.some(id => id === noteId)) {
+        return prev.filter(id => id !== noteId);
+      }
+      return [...prev, noteId];
+    });
+  }
 
   return (
-    <View style={styles.main}>
+    <Animated.View style={{...styles.main, opacity: fadeAnim}}>
       <TouchableOpacity 
         style={styles.addNoteButton}
         onPress={() => {
@@ -48,13 +75,9 @@ export const SelectViewComponent = () => {
           {notes.map(note => (
             <TouchableOpacity
               key={note.id}
-              onLongPress={() => dispatch(setSelectView(true))}
-              onPress={() => setSelectedNotes(prev => {
-                if (prev && prev.some(id => id === note.id)) {
-                  return prev.filter(id => id !== note.id);
-                }
-                return [...prev, note.id];
-              })}
+              onPress={() => {
+                hahdleSelect(note.id);
+              }}
             >
             <View 
               style={{...styles.card, 
@@ -78,7 +101,7 @@ export const SelectViewComponent = () => {
         </View>
         <NoteView />
       </ScrollView>
-    </View>
+    </Animated.View>
   );
 }
 

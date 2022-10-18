@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Modal, KeyboardAvoidingView, TextInput, TouchableOpacity, Text, View } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
+import { StyleSheet, Modal, KeyboardAvoidingView, TextInput, TouchableOpacity, Text, Animated, PanResponder, View} from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { addNote, editNote } from '../features/notes';
 import { setSelectedNote } from '../features/selectedNote';
+import GestureRecognizer from 'react-native-swipe-gestures';
 
 export default function NoteView() {
   const [text, setText] = useState('');
@@ -49,7 +50,7 @@ export default function NoteView() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={save}>
           <Text style={styles.back}>
@@ -65,14 +66,14 @@ export default function NoteView() {
           style={styles.titleInput}
           placeholder='Title'
         />
-          <TextInput
-            multiline
-            cursorColor='#fcb603'
-            value={text}
-            onChangeText={setText}
-            style={styles.input}
-            placeholder='start typing'
-          />
+        <TextInput
+          multiline
+          cursorColor='#fcb603'
+          value={text}
+          onChangeText={setText}
+          style={styles.input}
+          placeholder='start typing'
+        />
       </KeyboardAvoidingView>
     </Modal>
   )
